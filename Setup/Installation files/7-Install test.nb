@@ -1,0 +1,65 @@
+(* Content-type: application/vnd.wolfram.mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Mathematica 10.0' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       158,          7]
+NotebookDataLength[      1326,         55]
+NotebookOptionsPosition[       969,         37]
+NotebookOutlinePosition[      1328,         53]
+CellTagsIndexPosition[      1285,         50]
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+
+Cell[CellGroupData[{
+Cell["Testing the installation", "Title"],
+
+Cell["\<\
+Execute the cell below.
+A list of functions should be displayed.
+If this is not the case, contact me.
+Save the notebook and add it as attachment to row 8 of the tracking sheet\
+\>", "Text"],
+
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{"Needs", "[", "\"\<SMSHAR`\>\"", "]"}], ";"}], "\n", 
+ RowBox[{"?", "SMSHAR`*"}]}], "Input"]
+}, Open  ]]
+},
+WindowSize->{808, 911},
+WindowMargins->{{490, Automatic}, {Automatic, 29}},
+FrontEndVersion->"10.0 for Mac OS X x86 (32-bit, 64-bit Kernel) (September 9, \
+2014)",
+StyleDefinitions->"Default.nb"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[CellGroupData[{
+Cell[580, 22, 41, 0, 92, "Title"],
+Cell[624, 24, 199, 5, 87, "Text"],
+Cell[826, 31, 127, 3, 46, "Input"]
+}, Open  ]]
+}
+]
+*)
+
+(* End of internal cache information *)
+
