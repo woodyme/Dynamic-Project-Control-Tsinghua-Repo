@@ -1,0 +1,587 @@
+(* Content-type: application/vnd.wolfram.mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Mathematica 10.0' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       158,          7]
+NotebookDataLength[     15681,        578]
+NotebookOptionsPosition[     11595,        431]
+NotebookOutlinePosition[     11955,        447]
+CellTagsIndexPosition[     11912,        444]
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+
+Cell[CellGroupData[{
+Cell["SMSHAR Admin", "Title"],
+
+Cell[CellGroupData[{
+
+Cell["The accounts sheet", "Section"],
+
+Cell[CellGroupData[{
+
+Cell["Why is an account sheet needed?", "Subsection"],
+
+Cell["\<\
+The account sheet allows to create groups of users with same characteristics.
+The most obvious groups are\
+\>", "Text"],
+
+Cell[CellGroupData[{
+
+Cell["A company", "Item"],
+
+Cell["A department", "Item"],
+
+Cell["A groups of students", "Item"],
+
+Cell["A project group", "Item"]
+}, Open  ]]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["The account sheet is unique", "Subsection"],
+
+Cell["\<\
+You have created a sheet named \[OpenCurlyDoubleQuote]whatever_Accounts\
+\[CloseCurlyDoubleQuote].
+The ID of this sheet has been registered and put into your config file.\
+\[LineSeparator]Never change your accounts sheet.
+Do not share the account sheet, except with users entitled to manage accounts.\
+\>", "Text"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["The column layout of the account sheet", "Subsection"],
+
+Cell["\<\
+You have received a shared sheet with the current columns layout.\
+\[LineSeparator]Implement exactly this column layout into your account sheet.
+The column layout is repeated here after for convenience.\
+\>", "Text"],
+
+Cell[BoxData[
+ TagBox[GridBox[{
+    {"\<\"ACCOUNT\"\>", "\<\"JOB LIST ID\"\>", "\<\"#PROJECTS\"\>", \
+"\<\"START\"\>", "\<\"END\"\>", "\<\"TZ\"\>", "\<\"PRINCIPAL USER\"\>", \
+"\<\"TYPE\"\>", "\<\"SIZE\"\>", "\<\"Password\"\>", "\<\"Active\"\>", \
+"\<\"INVOICENR\"\>", "\<\"COMMENT\"\>"}
+   },
+   AutoDelete->False,
+   FrameStyle->GrayLevel[0.5],
+   GridBoxFrame->{"Columns" -> {{True}}, "Rows" -> {{True}}},
+   GridBoxItemSize->{"Columns" -> {{Automatic}}, "Rows" -> {{Automatic}}}],
+  "Grid"]], "Output"],
+
+Cell["To create a new account, simple add a row and enter data.", "Text"],
+
+Cell[CellGroupData[{
+
+Cell["ACCOUNT", "Subsubsection"],
+
+Cell["\<\
+The account name. 
+Use short names.
+Must be unique.\
+\>", "Text"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["JOB LIST ID", "Subsubsection"],
+
+Cell["\<\
+As part of the account creation process there is also the creation of an job \
+list for that account. 
+One account \[Rule] One Job list. 
+How this is done is explained below.
+Register the job list\[CloseCurlyQuote]s ID and enter it in this field.\
+\[LineSeparator]Take care of avoiding spaces.\
+\>", "Text"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["#PROJECTS", "Subsubsection"],
+
+Cell["\<\
+This is the maximum number of projects allowed for this account.\
+\>", "Text"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["START", "Subsubsection"],
+
+Cell["\<\
+The start date for the account.
+Before that date, no reporting will be done.\
+\>", "Text"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["END", "Subsubsection"],
+
+Cell["\<\
+The end date for the account.
+After that date no reporting will be done.\
+\>", "Text"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["TZ", "Subsubsection"],
+
+Cell["\<\
+The UTC time zone of the account user.\[LineSeparator]This is used to \
+determine the time of the day at which the report is to be issued, taking \
+into account the time zone of the server.\
+\>", "Text"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["PRINCIPAL USER", "Subsubsection"],
+
+Cell["The email of the account owner", "Text"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["TYPE", "Subsubsection"],
+
+Cell["\<\
+There are two options
+
+Basic
+Advanced
+
+Make this field a Pull Down menu with these two options\
+\>", "Text"],
+
+Cell[TextData[{
+ "Basic: the HTML formatted report with all s-curves, diagnostics and audit \
+page is produced.\nAdvanced: Basic + extra CDF formatted reports, with Nav \
+Chart, Gantt Clock, Predictor.\n\n",
+ StyleBox["Note",
+  FontWeight->"Bold"],
+ ": for a starter, ",
+ StyleBox["only use the Basic options.",
+  FontWeight->"Bold"]
+}], "Text"],
+
+Cell[CellGroupData[{
+
+Cell["\<\
+in order to produce advanced reports, a complementary software installation \
+is needed\
+\>", "ItemNumbered"],
+
+Cell["\<\
+in order to use the advanced report more info and training is needed.\
+\>", "ItemNumbered"]
+}, Open  ]]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["SIZE", "Subsubsection"],
+
+Cell["\<\
+Three option:
+
+1
+2
+3
+
+This parameter sets the maximum line count for the Gantt Chart.\
+\[LineSeparator]This is meaningful for payed accounts, as the tariffs are \
+made dependent on this parameter.
+In your case, I suggest to use the value 2 for all projects.
+
+These are the line count limits
+1:\t\[LessEqual] 100
+2:\t\[LessEqual] 1500
+3:\t> 1500\
+\>", "Text"],
+
+Cell["\<\
+If the line count exceeds the limit, a warning will be issued, and eventually \
+the lines above the limit will be cut off.\
+\>", "Text"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["Password", "Subsubsection"],
+
+Cell["\<\
+Not applicable.
+Was for web access.\
+\>", "Text"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["Active", "Subsubsection"],
+
+Cell["\<\
+Make this column to a checkbox.
+When an account may be active: check this box.
+If this box in not checked, the account not produce reports.\
+\>", "Text"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["INVOICENR", "Subsubsection"],
+
+Cell["NOT APPLICABLE", "Text"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["COMMENT", "Subsubsection"],
+
+Cell["Any text for convenience.", "Text"]
+}, Open  ]]
+}, Open  ]]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["The Job List", "Section"],
+
+Cell[CellGroupData[{
+
+Cell["What is the Job List", "Subsection"],
+
+Cell["\<\
+The job list is the list of the projects managed by the account owner.\
+\[LineSeparator]It is used by the SMSHAR system and drives the reporting \
+process.\
+\>", "Text"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["Creating  a Job List", "Subsection"],
+
+Cell["\<\
+A job list is linked to an account.\[LineSeparator]One account \[Rule] One \
+Job List.\[LineSeparator]A job list is created from the template by \
+\[OpenCurlyDoubleQuote]Save as new\[CloseCurlyDoubleQuote], naming it \
+\[OpenCurlyDoubleQuote]SMSHAR_JL_AccountName.
+When this sheet has been created do this:\
+\>", "Text"],
+
+Cell[CellGroupData[{
+
+Cell["\<\
+Register its ID and enter it in the column \[OpenCurlyDoubleQuote]JOB LIST ID\
+\[CloseCurlyDoubleQuote]  in the account\[CloseCurlyQuote]s row.\
+\>", "ItemNumbered"],
+
+Cell["Share this sheet with the account owner as editor.", "ItemNumbered"]
+}, Open  ]]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["Using the Job List", "Subsection"],
+
+Cell["These actions are for the account owner to perform", "Text"],
+
+Cell[CellGroupData[{
+
+Cell["Create a new project", "Subsubsection"],
+
+Cell[TextData[{
+ "Add a row in the job list.\nEnter the data\n\nProj\tthe project name. Use \
+",
+ StyleBox["short",
+  FontWeight->"Bold"],
+ " names\nFreq\tthe reporting frequency\n\tM1: every last day of the month\
+\[LineSeparator]\tM2: every 15the and every last day of the month\n\tD: every \
+day of the week\n\tMonday: every Monday of the week\n\tTuesday: every Tuesday \
+of the week\n\t\[Ellipsis]\nTheHour\tclosing time for entering % values. \n\t\
+\tAfter that hour, the report will be generated, taking the % values as \
+available at that moment.\n\t\tTheHour is in local user time (hence the TZ \
+parameter in the account sheet)\nE-mail to\tan email address for messages\n\
+Active\t\tcheckbox.\n\t\tCheck this box when:\n\t\t\t\tthe Gantt chart is \
+ready\n\t\t\t\tAND\n\t\t\t\tthe project execution has started, or is about to \
+start.\n\t\tWith this box unchecked, the project will not be considered as an \
+active project; it will also not be counted in the number of active projects\n\
+\t\t(See #PROJECTS in the account sheet)\n\t\t",
+ StyleBox["Do not toggle",
+  FontWeight->"Bold"],
+ " this box on and off: this will disrupt the continuity of the reporting.\n\
+Comment:\tany text for own use\nFlag:\t\tany value for own use, eg. filtering \
+large numbers of projects\nLink to Report:\ta short link to the project\
+\[CloseCurlyQuote]s report.\n\t\t\tThis link is computed and can be put into \
+place automatically.\n\t\t\tThis is done by a utilities notebook, part of the \
+system Driver package.\nLink to NavChart\tsame for the Nav Chart report (only \
+for Advanced accounts)\nLink to GanttClock\tsame for the Gantt Clock report \
+(only for Advanced accounts)\nLink to PredictorChart\tsame for the Predictor \
+Chart report (only for Advanced accounts)"
+}], "Text"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["End of project", "Subsubsection"],
+
+Cell["\<\
+When a project is terminated, or when no further progress reporting is needed \
+(near the end of the project), then simple de-activate this project by \
+un-checking the \[OpenCurlyDoubleQuote]Active\[CloseCurlyDoubleQuote] box.\
+\>", "Text"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["Archiving a project", "Subsubsection"],
+
+Cell["\<\
+To remove the project data from the active system, simply delete the project\
+\[CloseCurlyQuote]s row in the job list.\
+\>", "Text"]
+}, Open  ]]
+}, Open  ]]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["Deploying the Reports", "Section"],
+
+Cell["\<\
+The reports can be deployed to the project managers, not the same as account \
+owner, by distributing the short links to the reports.
+This assumes that they have access to the linked files on Dropbox.
+An alternative is to zip the complete project report folder located in 
+~Dropbox/Public/SMSHAR/Reports/Account/
+and send it to the pm.
+
+Do not share the job list with the project managers: permissions can not be \
+granted on a row level.\
+\>", "Text"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["Creating a new Gantt Chart", "Section"],
+
+Cell["\<\
+This is easily done starting from the template Gantt chart as follows:\
+\>", "Text"],
+
+Cell[CellGroupData[{
+
+Cell["Open the Gantt Chart template", "ItemNumbered"],
+
+Cell["\<\
+Save as new naming it \[OpenCurlyDoubleQuote]projectName\
+\[CloseCurlyDoubleQuote] (Remember to avoid long names)\
+\>", "ItemNumbered"],
+
+Cell["This name must be unique", "ItemNumbered"],
+
+Cell["Share the new Gantt with the PM", "ItemNumbered"],
+
+Cell["\<\
+Don\[CloseCurlyQuote]t care about the sheet id, it will be discovered by the \
+system.\
+\>", "ItemNumbered"]
+}, Open  ]]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["Gantt Chart Validation", "Section"],
+
+Cell[TextData[{
+ "The system is well protected against all kinds of non-standard data.\nThis \
+will provoke known situations with the first-time users, as they mostly \
+commit the same errors.\nThere is ample documentation available about (the \
+very few and very simple) rules to follow. Still, experience teaches that \
+mistakes are made.\n\n",
+ StyleBox["Best practice.\nBefore",
+  FontWeight->"Bold"],
+ " a Project is effectively activated (Active check box in the Job List), \
+have its Gantt Chart validated, so the most common errors can be corrected.\n\
+This validation only concerns data completeness and structure, not the logic, \
+not the durations.\n\nAt the beginning I advise to share the Gantt Charts \
+with me.\nI will perform the validation and inform you on my findings, and \
+how to correct mistakes.\nAfter a while you will be able to perform Gantt \
+Chart validation on your own.\n"
+}], "Text"]
+}, Open  ]]
+}, Open  ]]
+},
+WindowSize->{1092, 711},
+WindowMargins->{{178, Automatic}, {Automatic, 28}},
+FrontEndVersion->"10.0 for Mac OS X x86 (32-bit, 64-bit Kernel) (September 9, \
+2014)",
+StyleDefinitions->"Default.nb"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[CellGroupData[{
+Cell[580, 22, 29, 0, 92, "Title"],
+Cell[CellGroupData[{
+Cell[634, 26, 37, 0, 64, "Section"],
+Cell[CellGroupData[{
+Cell[696, 30, 53, 0, 44, "Subsection"],
+Cell[752, 32, 129, 3, 49, "Text"],
+Cell[CellGroupData[{
+Cell[906, 39, 25, 0, 28, "Item"],
+Cell[934, 41, 28, 0, 28, "Item"],
+Cell[965, 43, 36, 0, 28, "Item"],
+Cell[1004, 45, 31, 0, 28, "Item"]
+}, Open  ]]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[1084, 51, 49, 0, 44, "Subsection"],
+Cell[1136, 53, 324, 6, 87, "Text"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[1497, 64, 60, 0, 44, "Subsection"],
+Cell[1560, 66, 226, 4, 68, "Text"],
+Cell[1789, 72, 506, 11, 39, "Output"],
+Cell[2298, 85, 73, 0, 30, "Text"],
+Cell[CellGroupData[{
+Cell[2396, 89, 32, 0, 35, "Subsubsection"],
+Cell[2431, 91, 75, 4, 68, "Text"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[2543, 100, 36, 0, 35, "Subsubsection"],
+Cell[2582, 102, 317, 7, 106, "Text"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[2936, 114, 34, 0, 35, "Subsubsection"],
+Cell[2973, 116, 88, 2, 30, "Text"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[3098, 123, 30, 0, 35, "Subsubsection"],
+Cell[3131, 125, 100, 3, 49, "Text"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[3268, 133, 28, 0, 35, "Subsubsection"],
+Cell[3299, 135, 96, 3, 49, "Text"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[3432, 143, 27, 0, 35, "Subsubsection"],
+Cell[3462, 145, 213, 4, 49, "Text"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[3712, 154, 39, 0, 35, "Subsubsection"],
+Cell[3754, 156, 46, 0, 30, "Text"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[3837, 161, 29, 0, 35, "Subsubsection"],
+Cell[3869, 163, 118, 7, 125, "Text"],
+Cell[3990, 172, 345, 9, 87, "Text"],
+Cell[CellGroupData[{
+Cell[4360, 185, 119, 3, 30, "ItemNumbered"],
+Cell[4482, 190, 101, 2, 30, "ItemNumbered"]
+}, Open  ]]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[4632, 198, 29, 0, 35, "Subsubsection"],
+Cell[4664, 200, 368, 16, 277, "Text"],
+Cell[5035, 218, 146, 3, 30, "Text"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[5218, 226, 33, 0, 35, "Subsubsection"],
+Cell[5254, 228, 59, 3, 49, "Text"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[5350, 236, 31, 0, 35, "Subsubsection"],
+Cell[5384, 238, 163, 4, 68, "Text"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[5584, 247, 34, 0, 35, "Subsubsection"],
+Cell[5621, 249, 30, 0, 30, "Text"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[5688, 254, 32, 0, 35, "Subsubsection"],
+Cell[5723, 256, 41, 0, 30, "Text"]
+}, Open  ]]
+}, Open  ]]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[5825, 263, 31, 0, 64, "Section"],
+Cell[CellGroupData[{
+Cell[5881, 267, 42, 0, 44, "Subsection"],
+Cell[5926, 269, 179, 4, 49, "Text"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[6142, 278, 42, 0, 44, "Subsection"],
+Cell[6187, 280, 330, 6, 87, "Text"],
+Cell[CellGroupData[{
+Cell[6542, 290, 175, 3, 30, "ItemNumbered"],
+Cell[6720, 295, 74, 0, 30, "ItemNumbered"]
+}, Open  ]]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[6843, 301, 40, 0, 44, "Subsection"],
+Cell[6886, 303, 66, 0, 30, "Text"],
+Cell[CellGroupData[{
+Cell[6977, 307, 45, 0, 35, "Subsubsection"],
+Cell[7025, 309, 1778, 28, 600, "Text"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[8840, 342, 39, 0, 35, "Subsubsection"],
+Cell[8882, 344, 251, 4, 49, "Text"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[9170, 353, 44, 0, 35, "Subsubsection"],
+Cell[9217, 355, 142, 3, 30, "Text"]
+}, Open  ]]
+}, Open  ]]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[9420, 365, 40, 0, 64, "Section"],
+Cell[9463, 367, 462, 10, 144, "Text"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[9962, 382, 45, 0, 64, "Section"],
+Cell[10010, 384, 94, 2, 30, "Text"],
+Cell[CellGroupData[{
+Cell[10129, 390, 53, 0, 30, "ItemNumbered"],
+Cell[10185, 392, 145, 3, 30, "ItemNumbered"],
+Cell[10333, 397, 48, 0, 30, "ItemNumbered"],
+Cell[10384, 399, 55, 0, 30, "ItemNumbered"],
+Cell[10442, 401, 118, 3, 30, "ItemNumbered"]
+}, Open  ]]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[10609, 410, 41, 0, 64, "Section"],
+Cell[10653, 412, 914, 15, 239, "Text"]
+}, Open  ]]
+}, Open  ]]
+}
+]
+*)
+
+(* End of internal cache information *)

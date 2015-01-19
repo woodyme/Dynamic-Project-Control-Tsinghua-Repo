@@ -1,0 +1,885 @@
+(* Content-type: application/vnd.wolfram.mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Mathematica 10.0' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       158,          7]
+NotebookDataLength[     26330,        876]
+NotebookOptionsPosition[     21554,        713]
+NotebookOutlinePosition[     22146,        734]
+CellTagsIndexPosition[     22103,        731]
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+
+Cell[CellGroupData[{
+Cell["SMSHAR Utilities", "Title"],
+
+Cell[CellGroupData[{
+
+Cell["Scope", "Section"],
+
+Cell["A set of utilities to run DPC / SMSHAR manually.", "Text"],
+
+Cell["\<\
+Basically, the SMSHAR implementation is meant to run fully automatically.
+These are the functions implemented in the automated process:
+
+Account management
+Project management
+Project reporting\
+\>", "Text"],
+
+Cell[CellGroupData[{
+
+Cell["Account management", "Subsection"],
+
+Cell["\<\
+Whenever a new account has been created in the account sheet, the \
+corresponding folder structure and resources will be automatically generated.
+The resulting folders and files are found in:
+
+~/Dropbox/SMSHAR World/SMSAHRDATA/Accounts/\[Ellipsis]
+~/Dropbox/Public/SMSHAR/Reports/\[Ellipsis]\
+\>", "Text"],
+
+Cell["\<\
+Whenever an account is deleted from the account list, this account is marked \
+as \[OpenCurlyDoubleQuote]candidate to for archive\[CloseCurlyDoubleQuote].
+This archiving is to be executed manually with a \[OpenCurlyDoubleQuote]clean \
+up\[CloseCurlyDoubleQuote] function.\
+\>", "Text"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["Project management", "Subsection"],
+
+Cell["\<\
+Whenever a project is created in the Job List (linked to a given account \
+\[OpenCurlyDoubleQuote]theAccount\[CloseCurlyDoubleQuote]), the corresponding \
+folder structure and resources are generated automatically.
+The resulting folders and files are found in:
+
+~/Dropbox/SMSHAR World/SMSAHRDATA/Accounts/theAccount\[Ellipsis]
+~/Dropbox/Public/SMSHAR/Reports/theAccount/\[Ellipsis]\
+\>", "Text"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["Main loop", "Subsection"],
+
+Cell["\<\
+The main loop of the automated system runs every hour on the hour, except \
+when the system is started, then it runs immediately.
+In every loop, the account sheet and all job lists linked to the accounts are \
+scanned.
+The account admin and project admin is executed immediately.
+When this is done, then the reporting loop is initiated.\
+\>", "Text"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["Reporting loop", "Subsection"],
+
+Cell[TextData[{
+ "The reporting loop is driven by the \[OpenCurlyDoubleQuote]job list\
+\[CloseCurlyDoubleQuote]. This is the list of all active projects and their \
+reporting parameters.\nThose projects scheduled for the current day and \
+current hour will land in a \[OpenCurlyDoubleQuote]sublist\
+\[CloseCurlyDoubleQuote], which actually is the current and immediate \
+\[OpenCurlyDoubleQuote]batch list\[CloseCurlyDoubleQuote].\nWhen this is \
+done, the reports for the projects in the sublist are generated.\nThe job \
+list and corresponding sublist are updated on the hours 6,12,18 and 24.\
+\[LineSeparator]This means that a new project, when detected will not \
+immediately start being reported, but only after the first following update \
+has occurred.\n\nThe joblist and sublist files can be found here:\n\
+~/Dropbox/SMSHAR World/SMSHARDATA/Worklists/\nThese are .m files and can be \
+read with any text editor or (better) with ",
+ StyleBox["Mathematica",
+  FontSlant->"Italic"],
+ " using the Get[filename] function.\n"
+}], "Text"]
+}, Open  ]]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["Bypassing the automated system", "Section"],
+
+Cell[TextData[{
+ "Before the SMSHAR system is started for the first time it is ",
+ StyleBox["strongly advised",
+  FontWeight->"Bold"],
+ " to use the utilities here provided to run some tests on a ",
+ StyleBox["test account",
+  FontWeight->"Bold"],
+ " and a ",
+ StyleBox["test project.",
+  FontWeight->"Bold"],
+ "\nThis will allow for a close monitoring of the results, eventually \
+reporting problems.\n\nAlso, if one would decide not to run the system in \
+automatic mode, then, manually reporting can be executed here."
+}], "Text"],
+
+Cell["\<\
+The utilities use the SMSHAR functions.
+
+So do this:\
+\>", "Text"],
+
+Cell[CellGroupData[{
+
+Cell["\<\
+Should the automatic system run, close, and quit Mathematica altogether.\
+\>", "Item"],
+
+Cell[TextData[{
+ "Restart ",
+ StyleBox["Mathematica: ",
+  FontSlant->"Italic"],
+ "you now are sure of a clean state."
+}], "Item"],
+
+Cell["Then load SMSHAR by evaluating the cell below", "Item"]
+}, Open  ]],
+
+Cell["\<\
+General remark
+All code is shown explicitly, and not embedded in a GUI, so one can see \
+exactly what is being done.
+This means that in order to actually execute code, the containing cell must \
+be evaluated.
+Take care to follow the natural sequence of the cells.\
+\>", "Text"],
+
+Cell[BoxData[
+ RowBox[{"Needs", "[", "\"\<SMSHAR`\>\"", "]"}]], "Input"],
+
+Cell[CellGroupData[{
+
+Cell["Create a new account", "Subsection"],
+
+Cell["\<\
+This procedure will create the folders and resources for a new account.
+The procedure is protected against
+\tmissing name
+\tduplicate name\
+\>", "Text"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"InputField", "[", 
+  RowBox[{
+   RowBox[{"Dynamic", "@", "thisAccount"}], ",", "String", ",", 
+   RowBox[{"FieldHint", "\[Rule]", "\"\<ENTER A UNIQUE ACCOUNT NAME\>\""}]}], 
+  "]"}]], "Input"],
+
+Cell[BoxData[
+ InputFieldBox[Dynamic[$CellContext`thisAccount], String,
+  FieldHint->"ENTER A UNIQUE ACCOUNT NAME"]], "Output"]
+}, Open  ]],
+
+Cell["\<\
+Enter the account name (short names pls) in the field above, then Tab.
+Now execute the cell below.\
+\>", "Text"],
+
+Cell[BoxData[
+ RowBox[{"smsharCreateAccount", "[", "thisAccount", "]"}]], "Input"],
+
+Cell["\<\
+You can now check that the folder named \[OpenCurlyDoubleQuote]theAccount\
+\[CloseCurlyDoubleQuote] has been created in these directories:
+
+~/Dropbox/SMSHAR World/SMSAHRDATA/Accounts/
+~/Dropbox/SMSHAR World/SMSAHRDATA/Reports/
+~/Dropbox/Public/SMSHAR/Reports/\
+\>", "Text"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["Creating a new project", "Subsection"],
+
+Cell[TextData[{
+ "This procedure will create the folders and resources for a new project of a \
+given account.\n",
+ StyleBox["Beware",
+  FontWeight->"Bold"],
+ ": if the account doesn\[CloseCurlyQuote]t exist, it will be created.\n",
+ StyleBox["Careful",
+  FontWeight->"Bold"],
+ ": if You mistype the name of an existing account, a new one will be \
+created.\n",
+ StyleBox["This is one good reason to use short names!",
+  FontSlant->"Italic",
+  FontColor->RGBColor[0, 0, 1]],
+ "\n\nThe procedure is protected against\n\tmissing name\n\tduplicate name"
+}], "Text"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"InputField", "[", 
+  RowBox[{
+   RowBox[{"Dynamic", "@", "thisAccount"}], ",", "String", ",", 
+   RowBox[{
+   "FieldHint", "\[Rule]", "\"\<ENTER ACCOUNT NAME / AVOID MISTYPING\>\""}], 
+   ",", 
+   RowBox[{"ImageSize", "\[Rule]", "350"}]}], "]"}]], "Input"],
+
+Cell[BoxData[
+ InputFieldBox[Dynamic[$CellContext`thisAccount], String,
+  FieldHint->"ENTER ACCOUNT NAME / AVOID MISTYPING",
+  ImageSize->350]], "Output"]
+}, Open  ]],
+
+Cell["\<\
+Enter the account name (existing account, take care not to mistype) in the \
+field above, then Tab.
+
+Enter the project name (short names pls) in the field below, then Tab.\
+\>", "Text"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"InputField", "[", 
+  RowBox[{
+   RowBox[{"Dynamic", "@", "thisProject"}], ",", "String", ",", 
+   RowBox[{"FieldHint", "\[Rule]", "\"\<ENTER A UNIQUE PROJECT NAME\>\""}]}], 
+  "]"}]], "Input"],
+
+Cell[BoxData[
+ InputFieldBox[Dynamic[$CellContext`thisProject], String,
+  FieldHint->"ENTER A UNIQUE PROJECT NAME"]], "Output"]
+}, Open  ]],
+
+Cell["Now execute the cell below", "Text"],
+
+Cell[BoxData[
+ RowBox[{"smsharCreateProject", "[", 
+  RowBox[{"thisAccount", ",", "thisProject"}], "]"}]], "Input"],
+
+Cell["\<\
+You can now check that the folder named \[OpenCurlyDoubleQuote]theAccount\
+\[CloseCurlyDoubleQuote] has been created in these directories:
+
+~/Dropbox/SMSHAR World/SMSAHRDATA/Accounts/thisAccount/
+~/Dropbox/SMSHAR World/SMSAHRDATA/Reports/thisAccount/
+~/Dropbox/Public/SMSHAR/Reports/thisAccount/\
+\>", "Text"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["Reporting progress on a project", "Subsection"],
+
+Cell["Assuming these conditions are fulfilled:", "Text"],
+
+Cell[CellGroupData[{
+
+Cell["\<\
+Both account and project folders have been created. If not refer to the \
+sections above.\
+\>", "Item"],
+
+Cell[TextData[{
+ "The automated system has been properly shut down and ",
+ StyleBox["Mathematica",
+  FontSlant->"Italic"],
+ " has also been shut down."
+}], "Item"],
+
+Cell["The project has a Smartsheet Gantt sheet", "Item"],
+
+Cell["\<\
+The Gantt sheets name matches the project\[CloseCurlyQuote]s name (case \
+sensitive)\
+\>", "Item"],
+
+Cell["You have a working access token to Smartsheet sheets.", "Item"]
+}, Open  ]],
+
+Cell["you can now produce progress reports on the project.", "Text"],
+
+Cell[TextData[{
+ StyleBox["A thing to understand\n",
+  FontWeight->"Bold"],
+ "In this system, SMSHAR, one cannot choose the status date for the progress \
+reporting.\nThis status date is taken to be Today, as obtained by the \
+function below:"
+}], "Text"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"DateString", "[", 
+  RowBox[{
+   RowBox[{"Date", "[", "]"}], ",", 
+   RowBox[{"{", 
+    RowBox[{
+    "\"\<Day\>\"", ",", "\"\<-\>\"", ",", "\"\<Month\>\"", ",", "\"\<-\>\"", 
+     ",", "\"\<Year\>\""}], "}"}]}], "]"}]], "Input"],
+
+Cell[BoxData["\<\"16-01-2015\"\>"], "Output"]
+}, Open  ]],
+
+Cell["\<\
+This is consistent with the reporting parameters set in the Job List sheet: \
+Freq and TheHour.
+The idea is that reporting is fully automatic on fixed days in the month/week.\
+\>", "Text"],
+
+Cell[CellGroupData[{
+
+Cell["To generate a report do this", "Subsubsection"],
+
+Cell[TextData[{
+ "First load the software by evaluating the next cell.\n",
+ StyleBox["Note",
+  FontWeight->"Bold"],
+ ": \n\[OpenCurlyDoubleQuote]Needs\[CloseCurlyDoubleQuote] only loads the \
+software once.\nYou do need the function \[OpenCurlyDoubleQuote]smsharRun\
+\[CloseCurlyDoubleQuote]"
+}], "Text"],
+
+Cell[BoxData[{
+ RowBox[{"Needs", "[", "\"\<SMSHAR`\>\"", "]"}], "\n", 
+ RowBox[{
+  RowBox[{"smsharRun", "[", 
+   RowBox[{"acc_", ",", "proj_", ",", "size_"}], "]"}], ":=", 
+  "\[IndentingNewLine]", 
+  RowBox[{"Module", "[", 
+   RowBox[{
+    RowBox[{"{", 
+     RowBox[{"err", ",", "errmsg", ",", "sheetID", ",", "t", ",", "res"}], 
+     "}"}], ",", "\[IndentingNewLine]", 
+    RowBox[{
+     RowBox[{
+      RowBox[{"{", 
+       RowBox[{"err", ",", "errmsg", ",", "sheetID"}], "}"}], "=", 
+      RowBox[{"SMSHFetchSheetID", "[", 
+       RowBox[{"smshAccessToken", ",", "proj"}], "]"}]}], ";", 
+     "\[IndentingNewLine]", 
+     RowBox[{
+      RowBox[{"{", 
+       RowBox[{"t", ",", "res"}], "}"}], "=", "\[IndentingNewLine]", 
+      RowBox[{"If", "[", 
+       RowBox[{
+        RowBox[{"err", "\[NotEqual]", "\"\<err\>\""}], ",", 
+        "\[IndentingNewLine]", 
+        RowBox[{"AbsoluteTiming", "[", 
+         RowBox[{"SMSHAR`autoRun", "[", 
+          RowBox[{
+          "acc", ",", "proj", ",", "smshAccessToken", ",", "sheetID", ",", 
+           "size"}], "]"}], "]"}], ",", "\[IndentingNewLine]", 
+        RowBox[{"{", 
+         RowBox[{"0", ",", "errmsg"}], "}"}]}], "]"}]}], ";", 
+     "\[IndentingNewLine]", 
+     RowBox[{"{", 
+      RowBox[{"err", ",", "errmsg", ",", "sheetID", ",", "t", ",", "res"}], 
+      "}"}]}]}], "\[IndentingNewLine]", "]"}]}]}], "Input"],
+
+Cell["\<\
+Enter the account name in the field below.
+Mistyping will result in error msgs.\
+\>", "Text"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"InputField", "[", 
+  RowBox[{
+   RowBox[{"Dynamic", "@", "myAcc"}], ",", "String", ",", 
+   RowBox[{"FieldHint", "\[Rule]", "\"\<ENTER ACCOUNT NAME\>\""}]}], 
+  "]"}]], "Input"],
+
+Cell[BoxData[
+ InputFieldBox[Dynamic[$CellContext`myAcc], String,
+  FieldHint->"ENTER ACCOUNT NAME"]], "Output"]
+}, Open  ]],
+
+Cell["\<\
+Enter the project name in the field below.
+Mistyping will result in error msgs.\
+\>", "Text"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"InputField", "[", 
+  RowBox[{
+   RowBox[{"Dynamic", "@", "myProj"}], ",", "String", ",", 
+   RowBox[{"FieldHint", "\[Rule]", "\"\<ENTER PROJECT NAME\>\""}]}], 
+  "]"}]], "Input"],
+
+Cell[BoxData[
+ InputFieldBox[Dynamic[$CellContext`myProj], String,
+  FieldHint->"ENTER PROJECT NAME"]], "Output"]
+}, Open  ]],
+
+Cell["\<\
+Enter the size as set in the account: look into the account sheet, column \
+\[OpenCurlyDoubleQuote]SIZE\[CloseCurlyDoubleQuote]
+Mistyping will result in error msgs.\
+\>", "Text"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"InputField", "[", 
+  RowBox[{
+   RowBox[{"Dynamic", "@", "thisSize"}], ",", "Number", ",", 
+   RowBox[{"FieldHint", "\[Rule]", "\"\<ENTER SIZE {1,2,3}\>\""}]}], 
+  "]"}]], "Input"],
+
+Cell[BoxData[
+ InputFieldBox[Dynamic[$CellContext`thisSize], Number,
+  FieldHint->"ENTER SIZE {1,2,3}"]], "Output"]
+}, Open  ]],
+
+Cell["Now evaluate the cell below", "Text"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"out", "=", 
+   RowBox[{"smsharRun", "[", 
+    RowBox[{"myAcc", ",", "myProj", ",", "thisSize"}], "]"}]}], 
+  ";"}]], "Input"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"Dynamic", "[", "\[IndentingNewLine]", 
+  RowBox[{"If", "[", 
+   RowBox[{
+    RowBox[{
+     RowBox[{"Length", "@", "out"}], "\[Equal]", "5"}], ",", 
+    "\[IndentingNewLine]", 
+    RowBox[{"Grid", "[", 
+     RowBox[{
+      RowBox[{"{", "\[IndentingNewLine]", 
+       RowBox[{
+        RowBox[{"{", 
+         RowBox[{"\"\<Err\>\"", ",", 
+          RowBox[{"out", "[", 
+           RowBox[{"[", "1", "]"}], "]"}]}], "}"}], ",", 
+        "\[IndentingNewLine]", 
+        RowBox[{"{", 
+         RowBox[{"\"\<Err msg\>\"", ",", 
+          RowBox[{"out", "[", 
+           RowBox[{"[", "2", "]"}], "]"}]}], "}"}], ",", 
+        "\[IndentingNewLine]", 
+        RowBox[{"{", 
+         RowBox[{"\"\<Gantt Sheet ID\>\"", ",", 
+          RowBox[{"out", "[", 
+           RowBox[{"[", "3", "]"}], "]"}]}], "}"}], ",", 
+        "\[IndentingNewLine]", 
+        RowBox[{"{", 
+         RowBox[{"\"\<Computing Abs Time\>\"", ",", 
+          RowBox[{"out", "[", 
+           RowBox[{"[", "4", "]"}], "]"}]}], "}"}], ",", 
+        "\[IndentingNewLine]", 
+        RowBox[{"{", 
+         RowBox[{"\"\<Result\>\"", ",", 
+          RowBox[{"out", "[", 
+           RowBox[{"[", "5", "]"}], "]"}]}], "}"}]}], "\[IndentingNewLine]", 
+       "}"}], ",", "\[IndentingNewLine]", 
+      RowBox[{"Alignment", "\[Rule]", "Left"}], ",", "\[IndentingNewLine]", 
+      RowBox[{"Frame", "->", "All"}], ",", "\[IndentingNewLine]", 
+      RowBox[{"FrameStyle", "\[Rule]", "Gray"}]}], "\[IndentingNewLine]", 
+     "]"}], ",", "\[IndentingNewLine]", "\"\<NO DATA\>\""}], 
+   "\[IndentingNewLine]", "]"}], "\[IndentingNewLine]", "]"}]], "Input"],
+
+Cell[BoxData[
+ DynamicBox[ToBoxes[
+   If[Length[$CellContext`out] == 5, 
+    Grid[{{"Err", 
+       Part[$CellContext`out, 1]}, {"Err msg", 
+       Part[$CellContext`out, 2]}, {"Gantt Sheet ID", 
+       Part[$CellContext`out, 3]}, {"Computing Abs Time", 
+       Part[$CellContext`out, 4]}, {"Result", 
+       Part[$CellContext`out, 5]}}, Alignment -> Left, Frame -> All, 
+     FrameStyle -> Gray], "NO DATA"], StandardForm],
+  ImageSizeCache->{50., {1., 7.}}]], "Output"]
+}, Open  ]],
+
+Cell["\<\
+To find the report do one of these
+\texecute the cell below, or
+\t
+\tnavigate to
+\t\t~/Dropbox/Public/SMSHAR/Reports/theAccount/theProject/MC.html
+\t\tand open this file in the browser.\
+\>", "Text"],
+
+Cell[BoxData[
+ RowBox[{"SystemOpen", "[", "\[IndentingNewLine]", 
+  RowBox[{"FileNameJoin", "[", 
+   RowBox[{"{", 
+    RowBox[{
+    "$HomeDirectory", ",", " ", "\"\<Dropbox\>\"", ",", " ", "\"\<Public\>\"",
+      ",", " ", "\"\<SMSHAR\>\"", ",", " ", "\"\<Reports\>\"", ",", " ", 
+     "myAcc", ",", " ", "myproj", ",", " ", "\"\<MC.html\>\""}], "}"}], "]"}],
+   "]"}]], "Input"]
+}, Open  ]]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["Resetting a project", "Subsection"],
+
+Cell[TextData[{
+ "If you have reasons to obliterate all previous reporting data, then use \
+this function.\nIt will reset the project to a clean and empty state.\nThis \
+will not remove the project\[CloseCurlyQuote]s folder structure.\n\nWhen \
+would you do this?\nTypically when testing a new Gantt Chart and having \
+produced a lot of rubbish as a consequence of major flaws in the Gantt \
+structure and data.\n\n",
+ StyleBox["You would never do that on an ongoing project.\n",
+  FontWeight->"Bold"],
+ StyleBox["Beware: there is no undo",
+  FontWeight->"Bold",
+  FontColor->RGBColor[1, 0, 0]]
+}], "Text"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"InputField", "[", 
+  RowBox[{
+   RowBox[{"Dynamic", "@", "accClean"}], ",", "String", ",", 
+   RowBox[{"FieldHint", "\[Rule]", "\"\<ENTER ACCOUNT\>\""}]}], 
+  "]"}]], "Input"],
+
+Cell[BoxData[
+ InputFieldBox[Dynamic[$CellContext`accClean], String,
+  FieldHint->"ENTER ACCOUNT"]], "Output"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"InputField", "[", 
+  RowBox[{
+   RowBox[{"Dynamic", "@", "projClean"}], ",", "String", ",", 
+   RowBox[{"FieldHint", "\[Rule]", "\"\<ENTER PROJECT\>\""}]}], 
+  "]"}]], "Input"],
+
+Cell[BoxData[
+ InputFieldBox[Dynamic[$CellContext`projClean], String,
+  FieldHint->"ENTER PROJECT"]], "Output"]
+}, Open  ]],
+
+Cell["Evaluate the next cell.", "Text"],
+
+Cell[BoxData[
+ RowBox[{"smshCleanAccProj", "[", 
+  RowBox[{"accClean", ",", "projClean"}], "]"}]], "Input"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["WHAT IF", "Subsection"],
+
+Cell[CellGroupData[{
+
+Cell["What if I run the same project many times over?", "Subsubsection"],
+
+Cell["\<\
+If this happens on the same day, you will generate duplicate status points.
+This is generally detected and dupes are eliminated.
+If you do this over many days, you will generate as many progress points as \
+there are dates.\
+\>", "Text"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["What if the result contains errors, or worse?", "Subsubsection"],
+
+Cell["\<\
+The best thing to do now is to contact me and send the notebook with the err \
+msgs.\
+\>", "Text"]
+}, Open  ]]
+}, Open  ]]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["Generating the short link to a project\[CloseCurlyQuote]s report", \
+"Section"],
+
+Cell["\<\
+In the Job List sheet of an account, there is the column \
+\[OpenCurlyDoubleQuote]Link to Report\[CloseCurlyDoubleQuote].
+This column is meant to contain a short link to the \
+project\[CloseCurlyQuote]s report.\
+\>", "Text"],
+
+Cell["This link is generated by the next cells", "Text"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"Framed", "[", "\[IndentingNewLine]", 
+  RowBox[{"Grid", "[", 
+   RowBox[{
+    RowBox[{"{", "\[IndentingNewLine]", 
+     RowBox[{
+      RowBox[{"{", 
+       RowBox[{"\"\<Account\>\"", ",", 
+        RowBox[{"InputField", "[", 
+         RowBox[{
+          RowBox[{"Dynamic", "@", "accU"}], ",", "String"}], "]"}]}], "}"}], 
+      ",", "\[IndentingNewLine]", 
+      RowBox[{"{", 
+       RowBox[{"\"\<Project\>\"", ",", 
+        RowBox[{"InputField", "[", 
+         RowBox[{
+          RowBox[{"Dynamic", "@", "projU"}], ",", "String"}], "]"}]}], "}"}], 
+      ",", "\[IndentingNewLine]", 
+      RowBox[{"{", 
+       RowBox[{"\"\<Make URL\>\"", ",", 
+        RowBox[{"Button", "[", "\[IndentingNewLine]", 
+         RowBox[{"\"\<Make URL\>\"", ",", "\[IndentingNewLine]", 
+          RowBox[{"urlshortS", "=", 
+           RowBox[{"URLShorten", "[", 
+            RowBox[{"StringJoin", "[", 
+             RowBox[{
+             "\"\<https://dl.dropboxusercontent.com/u/32549074/SMSHAR/Reports/\
+\>\"", ",", "accU", ",", "\"\</\>\"", ",", "projU", ",", "\"\</\>\"", ",", 
+              "\"\<MC.html\>\""}], "]"}], "]"}]}]}], "]"}]}], "}"}], ",", 
+      "\[IndentingNewLine]", 
+      RowBox[{"{", 
+       RowBox[{"\"\<URL\>\"", ",", 
+        RowBox[{"InputField", "[", 
+         RowBox[{
+          RowBox[{"Dynamic", "@", "urlshortS"}], ",", "String", ",", 
+          RowBox[{"Enabled", "\[Rule]", "True"}]}], "]"}]}], "}"}]}], 
+     "\[IndentingNewLine]", "}"}], ",", "\[IndentingNewLine]", 
+    RowBox[{"Alignment", "\[Rule]", "Left"}]}], "]"}], "\[IndentingNewLine]", 
+  "]"}]], "Input"],
+
+Cell[BoxData[
+ FrameBox[
+  TagBox[GridBox[{
+     {"\<\"Account\"\>", 
+      InputFieldBox[Dynamic[$CellContext`accU], String]},
+     {"\<\"Project\"\>", 
+      InputFieldBox[Dynamic[$CellContext`projU], String]},
+     {"\<\"Make URL\"\>", 
+      ButtonBox["\<\"Make URL\"\>",
+       Appearance->Automatic,
+       ButtonFunction:>($CellContext`urlshortS = URLShorten[
+          StringJoin[
+          "https://dl.dropboxusercontent.com/u/32549074/SMSHAR/Reports/", \
+$CellContext`accU, "/", $CellContext`projU, "/", "MC.html"]]),
+       Evaluator->Automatic,
+       Method->"Preemptive"]},
+     {"\<\"URL\"\>", 
+      InputFieldBox[Dynamic[$CellContext`urlshortS], String,
+       Enabled->True]}
+    },
+    AutoDelete->False,
+    GridBoxAlignment->{"Columns" -> {{Left}}},
+    GridBoxItemSize->{"Columns" -> {{Automatic}}, "Rows" -> {{Automatic}}}],
+   "Grid"],
+  StripOnInput->False]], "Output"]
+}, Open  ]],
+
+Cell["\<\
+Enter data, then click the button \[OpenCurlyDoubleQuote]Make URL\
+\[CloseCurlyDoubleQuote]
+Copy the URL field and past it in place in the Job List sheet.
+This link can also be deployed to the project manger for accessing his \
+project report.\
+\>", "Text"]
+}, Open  ]]
+}, Open  ]]
+},
+WindowSize->{921, 1011},
+WindowMargins->{{257, Automatic}, {Automatic, 18}},
+FrontEndVersion->"10.0 for Mac OS X x86 (32-bit, 64-bit Kernel) (September 9, \
+2014)",
+StyleDefinitions->Notebook[{
+   Cell[
+    StyleData[StyleDefinitions -> "PackageGreen.nb"]]}, Visible -> False, 
+  FrontEndVersion -> 
+  "10.0 for Mac OS X x86 (32-bit, 64-bit Kernel) (September 9, 2014)", 
+  StyleDefinitions -> "PrivateStylesheetFormatting.nb"]
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[CellGroupData[{
+Cell[580, 22, 33, 0, 86, "Title"],
+Cell[CellGroupData[{
+Cell[638, 26, 24, 0, 47, "Section"],
+Cell[665, 28, 64, 0, 46, "Text"],
+Cell[732, 30, 216, 7, 141, "Text"],
+Cell[CellGroupData[{
+Cell[973, 41, 40, 0, 35, "Subsection"],
+Cell[1016, 43, 315, 7, 141, "Text"],
+Cell[1334, 52, 295, 5, 65, "Text"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[1666, 62, 40, 0, 35, "Subsection"],
+Cell[1709, 64, 405, 8, 141, "Text"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[2151, 77, 31, 0, 35, "Subsection"],
+Cell[2185, 79, 360, 7, 122, "Text"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[2582, 91, 36, 0, 35, "Subsection"],
+Cell[2621, 93, 1038, 17, 255, "Text"]
+}, Open  ]]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[3708, 116, 49, 0, 47, "Section"],
+Cell[3760, 118, 533, 13, 122, "Text"],
+Cell[4296, 133, 76, 4, 84, "Text"],
+Cell[CellGroupData[{
+Cell[4397, 141, 96, 2, 31, "Item"],
+Cell[4496, 145, 129, 5, 31, "Item"],
+Cell[4628, 152, 61, 0, 31, "Item"]
+}, Open  ]],
+Cell[4704, 155, 287, 7, 103, "Text"],
+Cell[4994, 164, 72, 1, 27, "Input"],
+Cell[CellGroupData[{
+Cell[5091, 169, 42, 0, 35, "Subsection"],
+Cell[5136, 171, 162, 5, 103, "Text"],
+Cell[CellGroupData[{
+Cell[5323, 180, 216, 5, 28, "Input"],
+Cell[5542, 187, 127, 2, 39, "Output"]
+}, Open  ]],
+Cell[5684, 192, 122, 3, 65, "Text"],
+Cell[5809, 197, 82, 1, 27, "Input"],
+Cell[5894, 200, 283, 7, 122, "Text"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[6214, 212, 44, 0, 35, "Subsection"],
+Cell[6261, 214, 562, 14, 179, "Text"],
+Cell[CellGroupData[{
+Cell[6848, 232, 280, 7, 44, "Input"],
+Cell[7131, 241, 154, 3, 39, "Output"]
+}, Open  ]],
+Cell[7300, 247, 195, 5, 84, "Text"],
+Cell[CellGroupData[{
+Cell[7520, 256, 216, 5, 28, "Input"],
+Cell[7739, 263, 127, 2, 39, "Output"]
+}, Open  ]],
+Cell[7881, 268, 42, 0, 46, "Text"],
+Cell[7926, 270, 115, 2, 28, "Input"],
+Cell[8044, 274, 319, 7, 122, "Text"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[8400, 286, 53, 0, 35, "Subsection"],
+Cell[8456, 288, 56, 0, 46, "Text"],
+Cell[CellGroupData[{
+Cell[8537, 292, 113, 3, 31, "Item"],
+Cell[8653, 297, 163, 5, 31, "Item"],
+Cell[8819, 304, 56, 0, 31, "Item"],
+Cell[8878, 306, 108, 3, 31, "Item"],
+Cell[8989, 311, 69, 0, 31, "Item"]
+}, Open  ]],
+Cell[9073, 314, 68, 0, 46, "Text"],
+Cell[9144, 316, 255, 6, 84, "Text"],
+Cell[CellGroupData[{
+Cell[9424, 326, 252, 7, 28, "Input"],
+Cell[9679, 335, 45, 0, 27, "Output"]
+}, Open  ]],
+Cell[9739, 338, 198, 4, 65, "Text"],
+Cell[CellGroupData[{
+Cell[9962, 346, 53, 0, 27, "Subsubsection"],
+Cell[10018, 348, 304, 7, 103, "Text"],
+Cell[10325, 357, 1368, 35, 171, "Input"],
+Cell[11696, 394, 103, 3, 65, "Text"],
+Cell[CellGroupData[{
+Cell[11824, 401, 201, 5, 28, "Input"],
+Cell[12028, 408, 112, 2, 39, "Output"]
+}, Open  ]],
+Cell[12155, 413, 103, 3, 65, "Text"],
+Cell[CellGroupData[{
+Cell[12283, 420, 202, 5, 28, "Input"],
+Cell[12488, 427, 113, 2, 39, "Output"]
+}, Open  ]],
+Cell[12616, 432, 188, 4, 65, "Text"],
+Cell[CellGroupData[{
+Cell[12829, 440, 204, 5, 28, "Input"],
+Cell[13036, 447, 115, 2, 39, "Output"]
+}, Open  ]],
+Cell[13166, 452, 43, 0, 46, "Text"],
+Cell[13212, 454, 160, 5, 28, "Input"],
+Cell[CellGroupData[{
+Cell[13397, 463, 1621, 40, 263, "Input"],
+Cell[15021, 505, 470, 10, 27, "Output"]
+}, Open  ]],
+Cell[15506, 518, 209, 7, 141, "Text"],
+Cell[15718, 527, 379, 8, 44, "Input"]
+}, Open  ]]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[16146, 541, 41, 0, 35, "Subsection"],
+Cell[16190, 543, 606, 12, 217, "Text"],
+Cell[CellGroupData[{
+Cell[16821, 559, 199, 5, 28, "Input"],
+Cell[17023, 566, 110, 2, 39, "Output"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[17170, 573, 200, 5, 28, "Input"],
+Cell[17373, 580, 111, 2, 39, "Output"]
+}, Open  ]],
+Cell[17499, 585, 39, 0, 46, "Text"],
+Cell[17541, 587, 107, 2, 28, "Input"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[17685, 594, 29, 0, 35, "Subsection"],
+Cell[CellGroupData[{
+Cell[17739, 598, 72, 0, 27, "Subsubsection"],
+Cell[17814, 600, 247, 5, 84, "Text"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[18098, 610, 70, 0, 27, "Subsubsection"],
+Cell[18171, 612, 108, 3, 46, "Text"]
+}, Open  ]]
+}, Open  ]]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[18340, 622, 85, 1, 47, "Section"],
+Cell[18428, 625, 234, 5, 65, "Text"],
+Cell[18665, 632, 56, 0, 46, "Text"],
+Cell[CellGroupData[{
+Cell[18746, 636, 1601, 38, 202, "Input"],
+Cell[20350, 676, 894, 24, 132, "Output"]
+}, Open  ]],
+Cell[21259, 703, 267, 6, 84, "Text"]
+}, Open  ]]
+}, Open  ]]
+}
+]
+*)
+
+(* End of internal cache information *)
